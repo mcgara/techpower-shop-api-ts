@@ -1,0 +1,5 @@
+node_modules
+dist/
+notes.[t,j]s
+.env
+githooks/
