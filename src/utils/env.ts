@@ -6,25 +6,54 @@ export interface EnvironmentDB {
   username: string
   password: string
   database: string
+  entities?: any[]
   synchronize?: boolean
   logging?: boolean
 }
 
-export function checkBool (value: string | undefined): boolean | undefined {
+export function get (key: string): string | undefined {
+  return process.env[key]
+}
+
+export function exists (key: string): boolean {
+  if (typeof get(key) === 'undefined') return false
+  return true
+}
+
+export function isEmpty (key: string): boolean {
+  if (get(key) === '') return true
+  return false
+}
+
+export function getStrict (key: string): string {
+  const value: string | undefined = get(key)
+  if (isEmpty(key) || typeof value === 'undefined') {
+    throw new Error(`No exists or no content environment var: ${key}`)
+  }
+  return value
+}
+
+export function checkBool (key: string): boolean | undefined {
+  const value = get(key)
   return value === 'true' ? true : value === 'false' ? false : undefined
 }
 
-export function checkNumber (value: any): number | undefined {
+export function checkNumber (key: string): number | undefined {
+  const value: any = get(key)
   if (isNaN(value)) return undefined
   return Number.parseInt(value)
 }
 
-export function checkEnv (key: string): string {
-  const value = process.env[key]
-  if (typeof value === 'undefined') {
-    throw new Error(`Not content or no exist the environment var: ${key}`)
+export function checkArray (key: string): any[] | undefined {
+  const value = get(key)
+  try {
+    if (typeof value !== 'undefined') {
+      const obj = JSON.parse(value)
+      if (Array.isArray(obj)) return obj
+    }
+  } catch (err) {
+    return undefined
   }
-  return value
 }
 
 export function connections (): EnvironmentDB[] {
@@ -37,26 +66,29 @@ export function connections (): EnvironmentDB[] {
     })
 
   // Default
-  const syn = checkBool(process.env.DB_SYNCHRONIZE) ?? true
-  const log = checkBool(process.env.DB_LOGGING) ?? false
+  const syn = checkBool('DB_SYNCHRONIZE') ?? true
+  const log = checkBool('DB_LOGGING') ?? false
 
   const conns: EnvironmentDB[] = []
   connNames.forEach(name => {
     let key: string
-    if (name === '_') {
+    if (name !== '_') key = `DB_${name}`
+    else {
       name = 'default'
       key = 'DB'
-    } else key = `DB_${name}`
+    }
+    const entities: any[] = checkArray(`${key}_ENTITIES`) ?? []
     const conn: EnvironmentDB = {
       name,
-      type: checkEnv(`${key}_TYPE`),
-      host: checkEnv(`${key}_HOST`),
-      port: checkNumber(process.env[`${key}_PORT`]),
-      username: checkEnv(`${key}_USERNAME`),
-      password: checkEnv(`${key}_PASSWORD`),
-      database: checkEnv(`${key}_DATABASE`),
-      synchronize: checkBool(process.env[`${key}_SYNCHRONIZE`]) ?? syn,
-      logging: checkBool(process.env[`${key}_LOGGING`]) ?? log
+      type: getStrict(`${key}_TYPE`),
+      host: getStrict(`${key}_HOST`),
+      port: checkNumber(`${key}_PORT`),
+      username: getStrict(`${key}_USERNAME`),
+      password: getStrict(`${key}_PASSWORD`),
+      database: getStrict(`${key}_DATABASE`),
+      entities,
+      synchronize: checkBool(`${key}_SYNCHRONIZE`) ?? syn,
+      logging: checkBool(`${key}_LOGGING`) ?? log
     }
     conns.push(conn)
   })
