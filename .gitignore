@@ -3,3 +3,5 @@ dist/
 notes.[t,j]s
 .env
 githooks/
+notes.[j,t]s
+**.map
