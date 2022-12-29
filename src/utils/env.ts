@@ -1,15 +1,7 @@
-export interface EnvironmentDB {
-  name: string
-  type: string
-  host: string
-  port: number | undefined
-  username: string
-  password: string
-  database: string
-  entities?: any[]
-  synchronize?: boolean
-  logging?: boolean
-}
+import * as dotenv from 'dotenv'
+import { EnvironmentDB } from './types'
+
+dotenv.config()
 
 export function get (key: string): string | undefined {
   return process.env[key]
@@ -21,39 +13,43 @@ export function exists (key: string): boolean {
 }
 
 export function isEmpty (key: string): boolean {
-  if (get(key) === '') return true
+  if (exists(key) && get(key) === '') return true
   return false
 }
 
 export function getStrict (key: string): string {
-  const value: string | undefined = get(key)
+  const value = get(key)
   if (isEmpty(key) || typeof value === 'undefined') {
     throw new Error(`No exists or no content environment var: ${key}`)
   }
   return value
 }
 
-export function checkBool (key: string): boolean | undefined {
+export function checkBool (key: string): boolean | null {
   const value = get(key)
-  return value === 'true' ? true : value === 'false' ? false : undefined
+  return value === 'true' ? true : value === 'false' ? false : null
 }
 
-export function checkNumber (key: string): number | undefined {
+export function checkNumber (key: string): number | null {
   const value: any = get(key)
-  if (isNaN(value)) return undefined
+  if (isNaN(value)) return null
   return Number.parseInt(value)
 }
 
-export function checkArray (key: string): any[] | undefined {
+export function checkObject (key: string): object | null {
   const value = get(key)
+  if (typeof value === 'undefined') return null
   try {
-    if (typeof value !== 'undefined') {
-      const obj = JSON.parse(value)
-      if (Array.isArray(obj)) return obj
-    }
+    return JSON.parse(value)
   } catch (err) {
-    return undefined
+    return null
   }
+}
+
+export function checkArray (key: string): any[] | null {
+  const obj = checkObject(key)
+  if (Array.isArray(obj)) return obj
+  return null
 }
 
 export function connections (): EnvironmentDB[] {
@@ -82,7 +78,7 @@ export function connections (): EnvironmentDB[] {
       name,
       type: getStrict(`${key}_TYPE`),
       host: getStrict(`${key}_HOST`),
-      port: checkNumber(`${key}_PORT`),
+      port: checkNumber(`${key}_PORT`) ?? undefined,
       username: getStrict(`${key}_USERNAME`),
       password: getStrict(`${key}_PASSWORD`),
       database: getStrict(`${key}_DATABASE`),
