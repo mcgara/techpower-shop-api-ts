@@ -49,7 +49,7 @@ export function imports<T> (
 ): Array<ImportStats<T>> {
   let data: Array<ImportStats<T>> = []
   readDir(path, options?.excludes).forEach(item => {
-    const pathI = pathLib.join(path.toString(), item)
+    const pathI = pathLib.resolve(path as string, item)
     let extname = pathLib.extname(item).substring(1)
     if (extname === item) extname = ''
     const stats = statSync(pathI)

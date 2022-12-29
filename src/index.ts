@@ -4,7 +4,6 @@ import express from 'express'
 import cors from 'cors'
 import { checkNumber } from './utils/env'
 import Routers from './utils/routers'
-import path from 'path'
 
 const fileConns = './src/db.ts'
 // const appDataSources: DataSource[] = []
@@ -24,7 +23,7 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-app.use('/', Routers(path.join(__dirname, './routers')))
+app.use('/', Routers('./src/routers'))
 
 const port = checkNumber('PORT') ?? 0
 app.listen(port, () => {
