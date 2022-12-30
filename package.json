@@ -1,7 +1,7 @@
 {
-  "name": "e-commerce-api-ts",
+  "name": "emart-commerce-api-ts",
   "version": "1.0.0",
-  "description": "BackEnd of e-commerce project with typescript",
+  "description": "BackEnd of Emart e-commerce project with typescript",
   "main": "./src/index.ts",
   "scripts": {
     "start": "ts-node ./src/index.ts",
