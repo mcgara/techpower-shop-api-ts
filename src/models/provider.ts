@@ -5,17 +5,17 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne
+  OneToMany
 } from 'typeorm'
-import { Provider } from './provider'
+import { User } from './user'
 
-@Entity('users')
-export class User extends BaseEntity {
+@Entity('provider')
+export class Provider extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
     id: string
 
   @Column()
-    username: string
+    name: string
 
   @Column()
     email: string
@@ -23,20 +23,11 @@ export class User extends BaseEntity {
   @Column()
     password: string
 
-  @Column()
-    name: string
+  @OneToMany(() => User, (user) => user.employeeOf, { cascade: true })
+    staff: User[]
 
   @Column()
-    lastName: string
-
-  @Column()
-    birthDate: Date
-
-  @Column()
-    direction: string
-
-  @ManyToOne(() => Provider, (provider) => provider.staff, { onDelete: 'SET NULL' })
-    employeeOf: Provider
+    description: string
 
   @CreateDateColumn()
     createdAt: Date
