@@ -1,31 +1,24 @@
 import 'reflect-metadata'
-import { ConnectionOptionsReader, DataSource } from 'typeorm'
+import './db'
 import express from 'express'
 import cors from 'cors'
-import { checkNumber } from './utils/env'
-import Routers from './utils/routers'
-
-const fileConns = './src/db.ts'
-// const appDataSources: DataSource[] = []
-const conns = new ConnectionOptionsReader({ configName: fileConns }).all()
-conns.then(data => {
-  data.forEach(conn => {
-    const appData = new DataSource(conn)
-    appData.initialize().catch(err => { throw err })
-    // appDataSources.push(appData)
-  })
-  // console.log(appDataSources)
-}).catch(err => {
-  throw err
-})
+import { get } from './utils/env'
+import routers from './utils/routers'
+import { AddressInfo } from 'net'
 
 const app = express()
+
+// settings
+app.set('PORT', get<number | undefined>('PORT', Number) ?? 0)
+
+// main middleware
 app.use(express.json())
 app.use(cors())
 
-app.use('/', Routers('./src/routers'))
+// routers
+app.use('/', routers('./src/routers/**/*'))
 
-const port = checkNumber('PORT') ?? 0
-app.listen(port, () => {
-  console.log(`Server running 🚀 in port: ${port}`)
+const server = app.listen(app.get('PORT'), () => {
+  const address = server.address() as AddressInfo
+  console.log(`Server running in port: ${address?.port ?? app.get('PORT')}`)
 })
