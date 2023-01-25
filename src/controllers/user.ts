@@ -1,10 +1,17 @@
 import { Request, Response, NextFunction } from 'express'
 import { User } from '../models/user'
+import { getEntityManager } from '../db'
+
+const user = getEntityManager({ name: 'User' })
+// TODO: delete 'Entity' extends BaseEntity (Active Record) and use EntityManager (Data Mapper)
 
 export function all (req: Request, res: Response): void {
-  User.find().then(data => {
-    res.json(data)
-  }).catch(err => { throw err })
+  const user2 = user()
+  if (user2 !== undefined) {
+    user2.find(User).then(data => {
+      res.json(data)
+    }).catch(err => { throw err })
+  }
 }
 
 export function get (req: Request, res: Response): void {
