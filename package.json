@@ -6,8 +6,7 @@
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "dev": "nodemon ./src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "devprepare": "husky install ./githooks && husky add ./githooks/pre-commit \"npx lint-staged\" && husky add ./githooks/commit-msg \"npx --no -- commitlint --edit ${1}\""
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "e-commerce",

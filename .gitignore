@@ -2,9 +2,8 @@ node_modules
 dist/
 notes.[t,j]s
 .env
-githooks/
 notes.[j,t]s
-**.map
+**/**.map
 
 package-lock.json
 pnpm-lock.yaml
