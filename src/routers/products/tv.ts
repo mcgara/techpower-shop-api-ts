@@ -1,4 +1,4 @@
-import { RouterExport } from '../../utils/types'
+import { RouterExport } from '../../utils/routers'
 import * as Product from '../../controllers/product'
 
 export const tv: RouterExport[] = [

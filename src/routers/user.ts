@@ -1,4 +1,4 @@
-import { RouterExport, FullRouterExport } from '../utils/types'
+import { RouterExport, FullRouterExport } from '../utils/routers'
 import * as User from '../controllers/user'
 
 export const UserGet: RouterExport[] = [

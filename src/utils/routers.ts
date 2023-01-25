@@ -1,20 +1,22 @@
 import { Router, RequestHandler } from 'express'
-import { Path } from 'typescript'
-import { PathLike } from 'fs'
-import { checkBool } from './env'
-import { imports } from './imports'
-import {
-  ImportStats,
-  ImportType,
-  MultiReg,
-  FullRouterExport,
-  RouterExport,
-  Route,
-  RouterHandlers,
-  RouterMethod,
-  RouterArray
-} from './types'
+import { IOptions } from 'glob'
+import { ImportType, ImportDirStats, imports } from './imports'
+import { get } from './env'
 
+export type RouterMethod = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'all' | 'head' | 'copy' | 'use'
+export type RouterHandlers = RequestHandler[]
+export type Route = `/${string}`
+export type RouterArray = [...[...[RouterMethod, Route] | [RouterMethod | Route], ...RouterHandlers] | RouterHandlers]
+export interface RouterObj {
+  route?: Route
+  method?: RouterMethod
+  handlers: RouterHandlers
+}
+export type RouterExport = RouterArray | RouterObj
+export interface FullRouterExport {
+  path?: Route
+  routers: RouterExport[]
+}
 export type ImportRouter = RouterExport | RouterExport[] | FullRouterExport
 
 export function isRoute (route: Route | RouterMethod | RequestHandler): route is Route {
@@ -33,7 +35,7 @@ export function isRouterExport (router: RouterExport | RouterExport[]): router i
   }
 }
 
-export function getRouterExport (items: RouterExport[]): Router {
+export function getRouterOfExport (items: RouterExport[]): Router {
   const router = Router()
   items.forEach(item => {
     if (typeof item === 'object') {
@@ -58,7 +60,7 @@ export function getRouterExport (items: RouterExport[]): Router {
   return router
 }
 
-export function getRouters (routers: ImportRouter[]): Router {
+export function getRoutersOfImport (routers: ImportRouter[]): Router {
   const router = Router()
   routers.forEach(item => {
     let path: Route = '/'
@@ -71,38 +73,36 @@ export function getRouters (routers: ImportRouter[]): Router {
     } else {
       data = item
     }
-    router.use(path, getRouterExport(data))
+    router.use(path, getRouterOfExport(data))
   })
   return router
 }
 
-const routeDir: boolean = checkBool('ROUTER_NAME_DIRECTORIES') ?? false
-const routeFile: boolean = checkBool('ROUTER_NAME_FILES') ?? false
+const routeDir = get<boolean | undefined>('ROUTER_NAME_DIRECTORIES', Boolean) ?? false
+const routeFile = get<boolean | undefined>('ROUTER_NAME_FILES', Boolean) ?? false
 
-export function getStatsRouters (data: Array<ImportStats<ImportRouter>>): Router {
+export function getRoutersOfStats (content: ImportDirStats<ImportRouter>): Router {
   const router = Router()
-  data.forEach(items => {
+  content.forEach(items => {
     let path: Route = '/'
-    if (items.stats.isFile()) {
-      if (routeFile) path += items.name
-      router.use(path, getRouters(Object.values(items.content as ImportType<ImportRouter>)))
-    } else if (items.stats.isDirectory()) {
-      if (routeDir) path += items.name
-      router.use(path, getStatsRouters(items.content as Array<ImportStats<ImportRouter>>))
+    const isFile = items.stats.isFile()
+    const pass = isFile || items.stats.isDirectory()
+    if (pass) {
+      if (routeFile || routeDir) path += items.name
+      let routers: Router
+      if (isFile) routers = getRoutersOfImport(Object.values(items.content as ImportType<ImportRouter>))
+      else routers = getRoutersOfStats(items.content as ImportDirStats<ImportRouter>)
+      router.use(path, routers)
     }
   })
   return router
 }
 
-export default function Routers (
-  path: Path | PathLike,
-  options?: {
-    excludes?: MultiReg
-    tree?: boolean
-    limit?: number
-  }
+export default function routers (
+  patterns: string | string[],
+  options?: IOptions & { tree?: boolean }
 ): Router {
-  if (typeof options === 'undefined') options = {}
-  if (typeof options?.limit === 'undefined') options.limit = -1
-  return getStatsRouters(imports<ImportRouter>(path, options))
+  options ??= {}
+  options.tree ??= true
+  return getRoutersOfStats(imports<ImportRouter>(patterns, options))
 }
