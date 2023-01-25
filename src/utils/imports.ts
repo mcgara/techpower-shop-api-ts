@@ -1,83 +1,66 @@
-import { readdirSync, PathLike, statSync } from 'fs'
-import { ImportStats, ImportType, MultiReg } from './types'
-import { Path } from 'typescript'
+import { Stats, statSync } from 'fs'
 import pathLib from 'path'
+import glob, { IOptions } from 'glob'
 
-// TODO: best way to compare Paths, the files
-export function multiTestReg (
-  value: string,
-  reg: MultiReg
-): boolean {
-  let items: Array<string | RegExp>
-  if (typeof reg === 'string' || reg instanceof RegExp) items = [reg]
-  else if (Object.values(reg).length === 0) return false
-  else items = reg
-  return items.every(item => {
-    if (typeof item === 'string') return new RegExp(item).test(value)
-    else if (item instanceof RegExp) return item.test(value)
-    else return false
-  })
+export type ImportType<T> = Record<string, T>
+export interface ImportStats<T> {
+  name: string
+  extname: string
+  stats: Stats
+  content: ImportType<T> | Array<ImportStats<T>> | undefined
 }
 
-export function readDir (
-  path: PathLike,
-  excludes?: MultiReg,
-  options?:
-  | {
-    encoding: BufferEncoding | null
-    withFileTypes?: false | undefined
+export type ImportDirStats<T> = Array<ImportStats<T>>
+
+export function multiPatterns (patterns: string | string[], options?: IOptions): string[] {
+  if (!Array.isArray(patterns)) patterns = [patterns]
+  return patterns.reduce<string[]>((p, v) => p.concat(glob.sync(v, options)), [])
+}
+
+export const ImportExtFiles = ['.js', '.ts', '.json']
+
+function importFromDir<T> (paths: string[], opts: { tree: boolean }): ImportDirStats<T> {
+  // Warning: the order of the paths is important, first the path of the folder then paths its files.
+  // TODO: use glob pattern option 'stats' for load which stats of folders and files and set order paths.
+  let data: ImportDirStats<T> = []
+  for (let i = 0; i < paths.length; i) {
+    const item = paths[i]
+    const path = pathLib.resolve(item)
+    let extname = pathLib.extname(item)
+    if (extname === item) extname = ''
+    const name = pathLib.basename(path).replace(extname, '')
+    const stats = statSync(path)
+    const subData: ImportStats<T> = {
+      name,
+      extname,
+      stats,
+      content: undefined
+    }
+    if (stats.isFile() && ImportExtFiles.includes(extname)) {
+      subData.content = require(path) as ImportType<T>
+      data.push(subData)
+    } else if (stats.isDirectory()) {
+      const subPaths = paths.filter(p => p.includes(item) && p !== item)
+      paths = paths.filter(p => !subPaths.includes(p))
+      const dir = importFromDir<T>(subPaths, opts)
+      if (opts.tree) {
+        subData.content = dir
+        data.push(subData)
+      } else data = [...data, ...dir]
+    }
+    paths.splice(i, 1)
   }
-  | BufferEncoding
-  | null
-): string[] {
-  const dir: string[] = []
-  readdirSync(path, options).forEach(item => {
-    if (typeof excludes === 'undefined' || !multiTestReg(item, excludes)) dir.push(item)
-  })
-  return dir
+  return data
 }
-
-export const ImportExtFiles = ['js', 'ts', 'json']
 
 export function imports<T> (
-  path: Path | PathLike,
-  options?: {
-    excludes?: MultiReg
-    tree?: boolean
-    limit?: number
-  }
-): Array<ImportStats<T>> {
-  let data: Array<ImportStats<T>> = []
-  readDir(path, options?.excludes).forEach(item => {
-    const pathI = pathLib.resolve(path as string, item)
-    let extname = pathLib.extname(item).substring(1)
-    if (extname === item) extname = ''
-    const stats = statSync(pathI)
-    const isImport = ImportExtFiles.includes(extname)
-    if (typeof options === 'undefined') options = {}
-    const tree = typeof options.tree !== 'undefined' ? options.tree : true
-    let file: ImportType<T> | undefined
-    let dir: Array<ImportStats<T>> | undefined = []
-    if (stats.isFile() && isImport) {
-      file = require(pathI)
-    } else if (stats.isDirectory()) {
-      if (typeof options.limit === 'undefined') options.limit = 0
-      const limit = options.limit - 1
-      if ((options.limit > 0 || options.limit < 0) && limit > -12) {
-        dir = imports<T>(pathI, { excludes: options.excludes, limit, tree })
-      }
-    }
-    if (dir.length > 0 && !tree) data = [...data, ...dir]
-    else {
-      const content = stats.isFile() ? file : stats.isDirectory() ? dir : undefined
-      const subData: ImportStats<T> = {
-        name: item.replace(`.${extname}`, ''),
-        extname,
-        stats,
-        content
-      }
-      data.push(subData)
-    }
-  })
-  return data
+  patterns: string | string[],
+  options?: IOptions & { tree?: boolean }
+): ImportDirStats<T> {
+  options ??= {}
+  options.tree ??= false
+  options.absolute ??= true
+
+  const paths = multiPatterns(patterns, options)
+  return importFromDir(paths, { tree: options.tree })
 }
