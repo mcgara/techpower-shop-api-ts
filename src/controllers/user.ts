@@ -2,20 +2,21 @@ import { Request, Response, NextFunction } from 'express'
 import { User } from '../models/user'
 import { getEntityManager } from '../db'
 
-const user = getEntityManager({ name: 'User' })
+const getManager = getEntityManager({ target: User })
 // TODO: delete 'Entity' extends BaseEntity (Active Record) and use EntityManager (Data Mapper)
 
 export function all (req: Request, res: Response): void {
-  const user2 = user()
-  if (user2 !== undefined) {
-    user2.find(User).then(data => {
-      res.json(data)
-    }).catch(err => { throw err })
-  }
+  const manager = getManager()
+  if (manager === undefined) { res.sendStatus(500); return }
+  manager.find(User).then(data => {
+    res.json(data)
+  }).catch(err => { throw err })
 }
 
 export function get (req: Request, res: Response): void {
-  User.findOneBy(req.params).then(data => {
+  const manager = getManager()
+  if (manager === undefined) { res.sendStatus(500); return }
+  manager.findOneBy(User, req.params).then(data => {
     if (typeof data === 'undefined' || data === null) {
       res.status(404).json({ error: 'not found' })
     } else {
@@ -31,20 +32,26 @@ export function middlewareCreateUser (req: Request, res: Response, next: NextFun
 }
 
 export function post (req: Request, res: Response): void {
-  const user = User.create(req.body)
-  User.save(user).then(data => res.json(data)).catch(err => {
+  const manager = getManager()
+  if (manager === undefined) { res.sendStatus(500); return }
+  const user = manager.create<User>(User, req.body)
+  manager.save(user).then(data => res.json(data)).catch(err => {
     res.status(500).json({ error: 'server error' })
     throw err
   })
 }
 
 export function put (req: Request, res: Response): void {
-  User.findOneBy(req.params).then(data => {
-    const user = { id: data?.id, ...req.body }
-    User.save(user).then(data => res.json(data)).catch(err => {
-      res.status(500).json({ error: 'server error' })
-      throw err
-    })
+  const manager = getManager()
+  if (manager === undefined) { res.sendStatus(500); return }
+  manager.findOneBy(User, req.params).then(data => {
+    if (data !== null) {
+      Object.defineProperties<User>(data, Object.getOwnPropertyDescriptors<User>(req.body))
+      manager.save<User>(data).then(u => res.json(u)).catch(err => {
+        res.status(500).json({ error: 'server error' })
+        throw err
+      })
+    } else res.sendStatus(404)
   }).catch(err => {
     res.status(500).json({ error: 'server error' })
     throw err
@@ -56,8 +63,10 @@ export function patch (req: Request, res: Response): void {
 }
 
 export function del (req: Request, res: Response): void {
-  User.findOneBy(req.params).then(data => {
-    data?.remove().then(() => res.sendStatus(200)).catch(err => {
+  const manager = getManager()
+  if (manager === undefined) { res.sendStatus(500); return }
+  manager.findOneBy(User, req.params).then(data => {
+    manager.remove(data).then(() => res.sendStatus(204)).catch(err => {
       res.status(500).json({ error: 'server error' })
       throw err
     })

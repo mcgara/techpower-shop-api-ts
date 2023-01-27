@@ -1,14 +1,19 @@
 import { Request, Response, NextFunction } from 'express'
+import { getRepository } from '../db'
 import { Product } from '../models/product'
 
+const repository = getRepository(Product)
+
 export function all (req: Request, res: Response): void {
-  Product.find().then(data => {
-    res.json(data)
-  }).catch(err => { throw err })
+  const product = repository()
+  if (product === undefined) { res.sendStatus(500); return }
+  product.find().then(data => res.json(data)).catch(err => { throw err })
 }
 
 export function get (req: Request, res: Response): void {
-  Product.findOneBy(req.params).then(data => {
+  const product = repository()
+  if (product === undefined) { res.sendStatus(500); return }
+  product.findOneBy(req.params).then(data => {
     if (typeof data === 'undefined' || data === null) {
       res.status(404).json({ error: 'not found' })
     } else {
@@ -24,20 +29,26 @@ export function middlewareCreateProduct (req: Request, res: Response, next: Next
 }
 
 export function post (req: Request, res: Response): void {
-  const user = Product.create(req.body)
-  Product.save(user).then(data => res.json(data)).catch(err => {
+  const product = repository()
+  if (product === undefined) { res.sendStatus(500); return }
+  const prod = product.create(req.body)
+  product.save(prod).then(data => res.json(data)).catch(err => {
     res.status(500).json({ error: 'server error' })
     throw err
   })
 }
 
 export function put (req: Request, res: Response): void {
-  Product.findOneBy(req.params).then(data => {
-    const user = { id: data?.id, ...req.body }
-    Product.save(user).then(data => res.json(data)).catch(err => {
-      res.status(500).json({ error: 'server error' })
-      throw err
-    })
+  const product = repository()
+  if (product === undefined) { res.sendStatus(500); return }
+  product.findOneBy(req.params).then(data => {
+    if (data !== null) {
+      Object.defineProperties<Product>(data, Object.getOwnPropertyDescriptors<Product>(req.body))
+      product.save<Product>(data).then(u => res.json(u)).catch(err => {
+        res.status(500).json({ error: 'server error' })
+        throw err
+      })
+    } else res.sendStatus(404)
   }).catch(err => {
     res.status(500).json({ error: 'server error' })
     throw err
@@ -49,11 +60,15 @@ export function patch (req: Request, res: Response): void {
 }
 
 export function del (req: Request, res: Response): void {
-  Product.findOneBy(req.params).then(data => {
-    data?.remove().then(() => res.sendStatus(200)).catch(err => {
-      res.status(500).json({ error: 'server error' })
-      throw err
-    })
+  const product = repository()
+  if (product === undefined) { res.sendStatus(500); return }
+  product.findOneBy(req.params).then(data => {
+    if (data !== null) {
+      product.remove(data).then(() => res.sendStatus(200)).catch(err => {
+        res.status(500).json({ error: 'server error' })
+        throw err
+      })
+    }
   }).catch(err => {
     res.status(500).json({ error: 'server error' })
     throw err
