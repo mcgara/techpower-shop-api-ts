@@ -1,6 +1,5 @@
 import {
   Entity,
-  BaseEntity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
@@ -10,7 +9,7 @@ import {
 import { Provider } from './provider'
 
 @Entity('users')
-export class User extends BaseEntity {
+export class User {
   @PrimaryGeneratedColumn('uuid')
     id: string
 
