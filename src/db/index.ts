@@ -3,7 +3,11 @@ import {
   DataSource,
   EntityMetadata,
   EntityManager,
-  EntityTarget
+  EntityTarget,
+  ObjectLiteral,
+  Repository,
+  TreeRepository,
+  MongoRepository
 } from 'typeorm'
 import '../utils/env'
 
@@ -32,13 +36,13 @@ export function getDataSource (
 }
 
 export function getEntityManager<Entity> (
-  where: {
+  where: Partial<EntityMetadata> & {
     name?: string
     tableName?: string
     tablePath?: string
     tableNameWithoutPrefix?: string
     target?: EntityTarget<Entity>
-  } & Partial<EntityMetadata>
+  }
 ): () => EntityManager | undefined
 
 export function getEntityManager (where: Partial<EntityMetadata>): () => EntityManager | undefined {
@@ -49,6 +53,30 @@ export function getEntityManager (where: Partial<EntityMetadata>): () => EntityM
       data = getDataSource(data =>
         data.entityMetadatas.some(em => keys.every(k => where[k] === em[k]))
       )?.manager
+    }
+    return data
+  }
+}
+
+export function getRepository<Entity extends ObjectLiteral> (
+  target: EntityTarget<Entity> | string | Function,
+  where?: Partial<EntityMetadata>
+): () => Repository<Entity> | undefined
+
+export function getRepository<Entity extends ObjectLiteral> (
+  target: EntityTarget<Entity> | string | Function,
+  where?: Partial<EntityMetadata>,
+  repo?: 'mongo' | 'tree'
+): () => Repository<Entity> | TreeRepository<Entity> | MongoRepository<Entity> | undefined {
+  where ??= {}
+  where.target = typeof target === 'object' ? (target as { name?: string }).name : target
+  const prop = repo === 'mongo' ? 'getMongoRepository' : repo === 'tree' ? 'getTreeRepository' : 'getRepository'
+  const manager = getEntityManager(where)
+  let data: Repository<Entity> | TreeRepository<Entity> | MongoRepository<Entity> | undefined
+  return () => {
+    if (data === undefined) {
+      const em = manager()
+      if (em !== undefined) data = em[prop](target)
     }
     return data
   }
