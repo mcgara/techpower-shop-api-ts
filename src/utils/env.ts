@@ -78,10 +78,7 @@ export class Type {
 
   constructor (type: Types, literal?: string)
   constructor (type: ((value: string, err: ErrParser, opts?: IOptions) => unknown), literal?: string)
-  constructor (
-    type: Types | CustomType,
-    literal?: string
-  ) {
+  constructor (type: Types | CustomType, literal?: string) {
     this.type = type
     this.literal = literal ?? allToString(type)
   }

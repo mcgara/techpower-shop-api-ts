@@ -1,7 +1,7 @@
 {
-  "name": "emart-commerce-api-ts",
+  "name": "techpower-shop-api-ts",
   "version": "1.0.0",
-  "description": "BackEnd of Emart e-commerce project with typescript",
+  "description": "Backend TechPower Shop e-commerce project with typescript",
   "main": "./src/index.ts",
   "scripts": {
     "start": "ts-node ./src/index.ts",
