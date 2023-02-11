@@ -1,5 +1,6 @@
-// import { DataSourceOptions } from 'typeorm'
-import { connections } from './env.conns'
+import { DataSourceOptions } from 'typeorm'
+import { getDataSourceOptionsOfEnv } from './conns.env'
+import { normalize } from './conns.utils'
 
 /*
 const conn1: DataSourceOptions = {
@@ -8,7 +9,9 @@ const conn1: DataSourceOptions = {
 }
 */
 
-export default [
+const conns: DataSourceOptions[] = [
   // conn1,
-  ...connections()
+  ...getDataSourceOptionsOfEnv()
 ]
+
+export default conns.map(conn => normalize(conn))
