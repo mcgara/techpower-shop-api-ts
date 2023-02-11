@@ -1,5 +1,5 @@
 import { DatabaseType, DataSourceOptions } from 'typeorm'
-import { Type, Types, Lib } from '../utils/env'
+import { Types, Type, array } from '../utils/env.type'
 
 const credential: Record<string, Types> = {
   url: String,
@@ -31,12 +31,12 @@ const mysql: Record<string, Types | Types[]> = {
   insecureAuth: Boolean,
   supportBigNumbers: Boolean,
   bigNumberStrings: Boolean,
-  dateStrings: [Boolean, Lib.Array([String])], // bool | string[]
-  debug: [Boolean, Lib.Array([String])], // bool | string[]
+  dateStrings: [Boolean, array(String)], // bool | string[]
+  debug: [Boolean, array(String)], // bool | string[]
   trace: Boolean,
   multipleStatements: Boolean,
   legacySpatialSupport: Boolean,
-  flags: Lib.Array([String]), // string[]
+  flags: array(String), // string[]
   connectorPackage: ['mysql', 'mysql2'],
   replication: Object
 }
@@ -77,18 +77,18 @@ export function isDataBaseType (value: string | DatabaseType): value is Database
 export const commonDataOptions: Record<keyof DataSourceOptions, Types | Types[]> = {
   name: String,
   type: dataBaseTypes,
-  entities: Lib.Array([JSON, String], '(EntitySchema: JSON | Glob patterns to typeorm.[Entity | EntitySchema]: String)[]'),
+  entities: array({ literal: '(EntitySchema: JSON | patterns to typeorm.[Entity | EntitySchema]: String)[]' }, JSON, String),
   entityPrefix: String,
   synchronize: Boolean,
   database: String,
   driver: new Type(String, '[module: driver database to connect]'),
   typename: String,
   metadataTableName: String,
-  logging: ['all', Boolean, Lib.Array(['query', 'schema', 'error', 'warn', 'info', 'log', 'migration'])],
+  logging: ['all', Boolean, array('query', 'schema', 'error', 'warn', 'info', 'log', 'migration')],
   logger: ['advanced-console', 'simple-console', 'file', 'debug'], // append?: new Type(Object, 'Object typeorm.[FileLogger | AdvancedConsoleLogger | SimpleConsoleLogger]')
   extra: Object,
-  subscribers: Lib.Array([String], '(Glob Patterns to typeorm.EventSubscribers: String)[]'),
-  migrations: Lib.Array([String], '(Glob Patterns to typeorm.Migration: String)[]'),
+  subscribers: array({ literal: '(Patterns to typeorm.EventSubscribers: String)[]' }, String),
+  migrations: array({ literal: '(Patterns to typeorm.Migration: String)[]' }, String),
   maxQueryExecutionTime: Number,
   poolSize: Number,
   namingStrategy: new Type(Object, 'Object NamingStrategy'),

@@ -9,21 +9,23 @@ import {
   TreeRepository,
   MongoRepository
 } from 'typeorm'
-import '../utils/env'
+import '../utils/env.type'
+import { sync } from 'glob'
+import { rootPath } from '../utils/tools'
 
 const dataSources: DataSource[] = []
 let ormConfig = process.env.ORMCONFIG_FILE
-ormConfig ??= process.env.NODE_ENV === 'production' ? './dist/db/ormconfig.js' : './src/db/ormconfig.ts'
+ormConfig ??= sync('ormconfig*', { cwd: __dirname, nodir: true, absolute: true })[0]
 
-new ConnectionOptionsReader({ configName: ormConfig }).all()
+new ConnectionOptionsReader({ root: rootPath, configName: ormConfig }).all()
   .then(conns => {
     conns.forEach((conn) => {
       new DataSource(conn).initialize()
         .then((data) => dataSources.push(data))
-        .catch((err) => { throw err })
+        .catch((err) => console.error(err))
     })
   })
-  .catch((err) => { throw err })
+  .catch((err) => console.error(err))
 
 export function length (): number {
   return dataSources.length
