@@ -34,7 +34,7 @@ export class User {
   @Column()
     direction: string
 
-  @ManyToOne(() => Provider, (provider) => provider.staff, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Provider, { onDelete: 'SET NULL' })
     employeeOf: Provider
 
   @CreateDateColumn()

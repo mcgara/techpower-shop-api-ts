@@ -37,7 +37,7 @@ function importFromDir<T> (paths: string[], opts: { tree: boolean }): ImportDirS
       content: undefined
     }
     if (stats.isFile() && ImportExtFiles.includes(extname)) {
-      subData.content = require(path) as ImportType<T>
+      subData.content = require(path) as ImportType<T> // eslint-disable-line
       data.push(subData)
     } else if (stats.isDirectory()) {
       const subPaths = paths.filter(p => p.includes(item) && p !== item)

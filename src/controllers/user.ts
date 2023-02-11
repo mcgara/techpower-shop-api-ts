@@ -3,7 +3,8 @@ import { User } from '../models/user'
 import { getEntityManager } from '../db'
 
 const getManager = getEntityManager({ target: User })
-// TODO: delete 'Entity' extends BaseEntity (Active Record) and use EntityManager (Data Mapper)
+// TODO: Refactor code all controllers
+// TODO: improve performance with DataMapper
 
 export function all (req: Request, res: Response): void {
   const manager = getManager()

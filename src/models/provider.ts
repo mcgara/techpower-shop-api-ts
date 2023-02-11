@@ -22,7 +22,7 @@ export class Provider {
   @Column()
     password: string
 
-  @OneToMany(() => User, (user) => user.employeeOf, { cascade: true })
+  @OneToMany(() => User, (user) => user.id, { cascade: false })
     staff: User[]
 
   @Column()

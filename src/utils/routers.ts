@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from 'express'
 import { IOptions } from 'glob'
 import { ImportType, ImportDirStats, imports } from './imports'
-import { get } from './env'
+import { get } from './env.type'
 
 export type RouterMethod = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'all' | 'head' | 'copy' | 'use'
 export type RouterHandlers = RequestHandler[]
@@ -78,8 +78,8 @@ export function getRoutersOfImport (routers: ImportRouter[]): Router {
   return router
 }
 
-const routeDir = get<boolean | undefined>('ROUTER_NAME_DIRECTORIES', Boolean) ?? false
-const routeFile = get<boolean | undefined>('ROUTER_NAME_FILES', Boolean) ?? false
+const routeDir = get('ROUTER_NAME_DIRECTORIES', Boolean, undefined) ?? false
+const routeFile = get('ROUTER_NAME_FILES', Boolean, undefined) ?? false
 
 export function getRoutersOfStats (content: ImportDirStats<ImportRouter>): Router {
   const router = Router()
@@ -106,3 +106,5 @@ export default function routers (
   options.tree ??= true
   return getRoutersOfStats(imports<ImportRouter>(patterns, options))
 }
+
+// IDEA: Create a Schema or Layout of all routers 
