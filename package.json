@@ -2,11 +2,19 @@
   "name": "techpower-shop-api-ts",
   "version": "1.0.0",
   "description": "Backend TechPower Shop e-commerce project with typescript",
-  "main": "./src/index.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node ./src/index.ts",
-    "dev": "nodemon ./src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm run build && node build",
+    "dev": "nodemon src/index.ts",
+    "dev:start": "ts-node src",
+    "dev:build": "npm run build && nodemon build",
+    "clean": "rimraf build",
+    "build": "npm run clean && npm run build:ts",
+    "build:ts": "tsc",
+    "watch": "npx concurrently -k -i --hide ts -n \"build,ts\" -c \"yellow.bold,blue.bold\" \"npm:dev:build\" \"npm:watch:ts\"",
+    "watch:ts": "tsc -w",
+    "upgrade": "npm update --save-dev && npm update --save",
+    "test": "jest"
   },
   "keywords": [
     "e-commerce",
@@ -14,7 +22,7 @@
     "api",
     "typescript"
   ],
-  "author": "Maragrev",
+  "author": "mcgara",
   "license": "MIT",
   "dependencies": {
     "@types/cors": "^2.8.13",
@@ -27,18 +35,24 @@
     "glob": "^8.1.0",
     "mysql": "2.18.1",
     "reflect-metadata": "0.1.13",
-    "ts-node": "10.9.1",
+    "rimraf": "^4.1.2",
     "typeorm": "0.3.11",
     "typescript": "4.9.4"
   },
   "devDependencies": {
     "@commitlint/cli": "17.3.0",
     "@commitlint/config-conventional": "17.3.0",
+    "@types/jest": "^29.4.0",
     "commitizen": "4.2.6",
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
     "cz-conventional-changelog": "3.3.0",
     "husky": "8.0.2",
+    "jest": "^29.4.2",
     "lint-staged": "13.1.0",
     "nodemon": "2.0.20",
+    "ts-jest": "^29.0.5",
+    "ts-node": "10.9.1",
     "ts-standard": "12.0.1"
   },
   "engines": {
