@@ -4,10 +4,10 @@
   "description": "Backend TechPower Shop e-commerce project with typescript",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npm run build && node build",
+    "start": "npm run build && node build/src",
     "dev": "nodemon src/index.ts",
     "dev:start": "ts-node src",
-    "dev:build": "npm run build && nodemon build",
+    "dev:build": "npm run build && nodemon build/src",
     "clean": "rimraf build",
     "build": "npm run clean && npm run build:ts",
     "build:ts": "tsc",
