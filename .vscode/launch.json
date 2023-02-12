@@ -11,7 +11,16 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\src\\index.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/**/*.js"]
+      "outFiles": ["${workspaceFolder}/build/**/*.js"],
+      "console": "internalConsole"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch already build",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}\\src\\index.ts",
+      "outFiles": ["${workspaceFolder}/build/**/*.js"]
     }
   ]
 }
