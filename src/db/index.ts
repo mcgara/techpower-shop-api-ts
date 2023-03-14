@@ -9,7 +9,7 @@ import {
   TreeRepository,
   MongoRepository
 } from 'typeorm'
-import '../utils/env.type'
+import '../utils/env'
 import { sync } from 'glob'
 import { rootPath } from '../utils/tools'
 

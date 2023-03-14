@@ -1,13 +1,13 @@
 import { DatabaseType, DataSourceOptions } from 'typeorm'
-import { Types, Type, array } from '../utils/env.type'
+import { Types, Type, Literal, array } from '../utils/env'
 
 const credential: Record<string, Types> = {
-  url: String,
-  host: String,
+  url: Literal,
+  host: Literal,
   port: Number,
-  username: String,
-  password: String,
-  database: String
+  username: Literal,
+  password: Literal,
+  database: Literal
 }
 
 /* const replication: Record<string> | object = {
@@ -22,10 +22,10 @@ const credential: Record<string, Types> = {
 // MySql, MariaDB, Aurora-MySql
 const mysql: Record<string, Types | Types[]> = {
   ...credential,
-  ssl: [Object, String],
-  socketPath: String,
-  charset: String,
-  timezone: String,
+  ssl: [Object, Literal],
+  socketPath: Literal,
+  charset: Literal,
+  timezone: Literal,
   connectTimeout: Number,
   acquireTimeout: Number,
   insecureAuth: Boolean,
@@ -52,20 +52,20 @@ export const dataBaseOptions: Record<DatabaseType, Record<string, Types | Types[
   'aurora-mysql': mysql,
   postgres,
   cockroachdb: postgres,
-  oracle: { database: String },
+  oracle: { database: Literal },
   'aurora-postgres': postgres,
-  sqlite: { database: String },
-  'better-sqlite3': { database: String },
-  capacitor: { database: String },
-  cordova: { database: String },
-  'react-native': { database: String },
-  nativescript: { database: String },
+  sqlite: { database: Literal },
+  'better-sqlite3': { database: Literal },
+  capacitor: { database: Literal },
+  cordova: { database: Literal },
+  'react-native': { database: Literal },
+  nativescript: { database: Literal },
   mssql: { ...credential },
   mongodb: { ...credential },
-  sqljs: { database: String },
-  expo: { database: String },
-  spanner: { database: String },
-  sap: { database: String }
+  sqljs: { database: Literal },
+  expo: { database: Literal },
+  spanner: { database: Literal },
+  sap: { database: Literal }
 }
 
 export const dataBaseTypes = Object.keys(dataBaseOptions) as DatabaseType[]
@@ -75,15 +75,15 @@ export function isDataBaseType (value: string | DatabaseType): value is Database
 }
 
 export const commonDataOptions: Record<keyof DataSourceOptions, Types | Types[]> = {
-  name: String,
+  name: Literal,
   type: dataBaseTypes,
   entities: array({ literal: '(EntitySchema: JSON | patterns to typeorm.[Entity | EntitySchema]: String)[]' }, JSON, String),
-  entityPrefix: String,
+  entityPrefix: Literal,
   synchronize: Boolean,
-  database: String,
-  driver: new Type(String, '[module: driver database to connect]'),
-  typename: String,
-  metadataTableName: String,
+  database: Literal,
+  driver: new Type(Literal, { literal: '[module: driver database to connect]' }),
+  typename: Literal,
+  metadataTableName: Literal,
   logging: ['all', Boolean, array('query', 'schema', 'error', 'warn', 'info', 'log', 'migration')],
   logger: ['advanced-console', 'simple-console', 'file', 'debug'], // append?: new Type(Object, 'Object typeorm.[FileLogger | AdvancedConsoleLogger | SimpleConsoleLogger]')
   extra: Object,
@@ -91,11 +91,11 @@ export const commonDataOptions: Record<keyof DataSourceOptions, Types | Types[]>
   migrations: array({ literal: '(Patterns to typeorm.Migration: String)[]' }, String),
   maxQueryExecutionTime: Number,
   poolSize: Number,
-  namingStrategy: new Type(Object, 'Object NamingStrategy'),
+  namingStrategy: new Type(Object, { literal: 'Object NamingStrategy' }),
   entitySkipConstructor: Boolean,
   dropSchema: Boolean,
   migrationsRun: Boolean,
-  migrationsTableName: String,
+  migrationsTableName: Literal,
   migrationsTransactionMode: ['all', 'none', 'each'],
   relationLoadStrategy: ['join', 'query'],
   cache: [Boolean, Object]
@@ -103,7 +103,7 @@ export const commonDataOptions: Record<keyof DataSourceOptions, Types | Types[]>
 
 /* cache: {
   type: ['database', 'redis', 'ioredis', 'ioredis/cluster'],
-  tableName: String,
+  tableName: Literal,
   options: Object, // any?
   alwaysEnabled: Boolean,
   duration: Number,

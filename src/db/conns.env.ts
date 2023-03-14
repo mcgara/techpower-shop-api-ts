@@ -1,5 +1,5 @@
 import { DataSourceOptions, DatabaseType } from 'typeorm'
-import { Types, get, EnvError, ErrorParser } from '../utils/env.type'
+import { Types, get, EnvError, ErrorParser } from '../utils/env'
 import { toCamelCase } from '../utils/tools'
 import {
   commonDataOptions,

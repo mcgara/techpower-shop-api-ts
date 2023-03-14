@@ -2,7 +2,7 @@ import 'reflect-metadata'
 import './db'
 import express from 'express'
 import cors from 'cors'
-import { get } from './utils/env.type'
+import { get } from './utils/env'
 import routers from './utils/routers'
 import { AddressInfo } from 'net'
 
@@ -20,5 +20,6 @@ app.use('/', routers('routers/**/*', { cwd: __dirname }))
 
 const server = app.listen(app.get('PORT'), () => {
   const address = server.address() as AddressInfo
-  console.log(`Server running in port: ${address?.port ?? app.get('PORT')}`)
+  if (address?.port !== undefined) app.set('PORT', address.port)
+  console.log(`Server running in port: ${(app.get('PORT') as number).toString()}`)
 })

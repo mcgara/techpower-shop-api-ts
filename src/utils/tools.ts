@@ -9,15 +9,15 @@ export function setRootOnPattern (pattern: string, options?: IOptions): string {
   return glob.sync(p, options).length > 0 ? p : pattern
 }
 
-export function allToString (value: unknown, limit?: number): string {
-  limit ??= 30
+export function allToString (value: unknown, length?: number | null): string {
+  if (length === undefined) length = 30
   let str = 'object'
   if (Array.isArray(value)) str = JSON.stringify(value)
   else if (typeof value === 'function' || typeof value === 'object') {
-    str = value?.toString() ?? JSON.stringify(value)
+    str = JSON.stringify(value) ?? value?.toString()
     if (typeof value === 'function' && ![undefined, 'anonymous'].includes(value?.name)) str = value.name
   } else str = String(value)
-  if (str.length > limit) str = str.substring(0, limit)
+  if (length !== null && str.length > length) str = str.substring(0, length)
   return str
 }
 

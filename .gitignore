@@ -1,9 +1,8 @@
 node_modules
 dist/
 build/
-notes.[t,j]s
 .env
-notes.[j,t]s
+**/notes.[j,t]s
 **/**.map
 
 package-lock.json

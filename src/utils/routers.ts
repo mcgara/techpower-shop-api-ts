@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from 'express'
 import { IOptions } from 'glob'
 import { ImportType, ImportDirStats, imports } from './imports'
-import { get } from './env.type'
+import { get } from './env'
 
 export type RouterMethod = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'all' | 'head' | 'copy' | 'use'
 export type RouterHandlers = RequestHandler[]
@@ -107,4 +107,4 @@ export default function routers (
   return getRoutersOfStats(imports<ImportRouter>(patterns, options))
 }
 
-// IDEA: Create a Schema or Layout of all routers 
+// IDEA: Create a Schema or Layout of all routers
